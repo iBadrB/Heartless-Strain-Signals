@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+
+<!--
+  Derived from the "kgdToughnessDominated" example distributed with GEOS
+  (inputFiles/hydraulicFracturing in the GEOS repository):
+  https://github.com/GEOS-DEV/GEOS/tree/develop/inputFiles/hydraulicFracturing
+  Thesis modifications: mesh extents/gridding, perforation and source placement,
+  source rates (Q0/2^k sweep), run duration, and time-history output collections.
+  Unmodified originals + details: simulation/upstream_geos_examples/PROVENANCE.md
+-->
+
+<Problem>
+  <Included>
+    <File name="./kgdToughnessDominated_base_3.xml"/>
+  </Included>
+
+  <Mesh>
+    <!-- Sphinx_Mesh_InternalMesh -->
+    <InternalMesh 
+      name="mesh1"
+      elementTypes="{C3D8}"
+      xCoords="{ -100, 100 }"
+      yCoords="{ 0, 50 }"
+      zCoords="{ 0, 1 }"
+      nx="{100 }"
+      ny="{ 100 }"
+      nz="{ 2 }"
+      cellBlockNames="{cb1}"/>
+    <!-- Sphinx_Mesh_InternalMesh_End -->
+  </Mesh>
+
+  <Geometry>
+
+    <!-- Sphinx_Geometry_InitFracture -->
+    <Box
+      name="fracture1"
+      xMin="{ -0.01, -0.01, -0.01 }"
+      xMax="{ 0.01,  1.01,  1.01 }"/>
+    <!-- Sphinx_Geometry_InitFracture_End -->
+
+    <!-- Sphinx_Geometry_InjSource -->
+    <Box
+      name="source1"
+      xMin="{ -0.01, -0.01, -0.01 }"
+      xMax="{ 0.01,  1.01,  1.01 }"/>
+    <!-- Sphinx_Geometry_InjSource_End -->
+
+    <!-- Sphinx_Geometry_FracturePlane -->
+    <Box
+      name="core1"
+      xMin="{ -0.01, -0.01, -0.01 }"
+      xMax="{ 0.01, 50.01,  1.01 }"/>
+    <!-- Sphinx_Geometry_FracturePlane_End -->
+
+  </Geometry>
+
+  <Parameters>
+    <Parameter
+      name="src_term_scale"
+      value="0.125"/>
+
+    <Parameter
+      name="src_term_init"
+      value="-5e-2"/>
+    
+
+    <Parameter
+      name="src_term"
+      value="`$src_term_scale$*$src_term_init$`"/>
+
+
+    <Parameter
+      name="t_max"
+      value="150.1 [s]"/>
+  </Parameters>
+
+  </Problem>

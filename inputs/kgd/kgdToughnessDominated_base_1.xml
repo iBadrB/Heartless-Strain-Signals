@@ -1,0 +1,338 @@
+<?xml version="1.0" ?>
+
+<!--
+  Derived from the "kgdToughnessDominated" example distributed with GEOS
+  (inputFiles/hydraulicFracturing in the GEOS repository):
+  https://github.com/GEOS-DEV/GEOS/tree/develop/inputFiles/hydraulicFracturing
+  Thesis modifications: mesh extents/gridding, perforation and source placement,
+  source rates (Q0/2^k sweep), run duration, and time-history output collections.
+  Unmodified originals + details: simulation/upstream_geos_examples/PROVENANCE.md
+-->
+
+<Problem>
+  <Solvers
+    gravityVector="{ 0.0, 0.0, -0.0 }">
+    <!-- Sphinx_Solvers_Hydrofracture -->
+    <Hydrofracture
+      name="hydrofracture"
+      solidSolverName="lagsolve"
+      flowSolverName="SinglePhaseFlow"
+      surfaceGeneratorName="SurfaceGen"
+      logLevel="1"
+      targetRegions="{ Fracture }"
+      maxNumResolves="2"
+      useQuasiNewton="1">
+    <!-- Sphinx_Solvers_Hydrofracture_End -->
+
+      <NonlinearSolverParameters
+        newtonTol="1.0e-5"
+        newtonMaxIter="20"
+        lineSearchMaxCuts="3"/>
+      <LinearSolverParameters
+        directParallel="0"/>
+    </Hydrofracture>
+
+    <!-- Sphinx_Solvers_SolidMechanicsLagrangianFEM -->
+    <SolidMechanicsLagrangianFEM
+      name="lagsolve"
+      discretization="FE1"
+      targetRegions="{ Domain, Fracture }"
+      contactRelationName="fractureContact"
+      contactPenaltyStiffness="1.0"/>
+    <!-- Sphinx_Solvers_SolidMechanicsLagrangianFEM_End -->
+
+    <!-- Sphinx_Solvers_SinglePhaseFVM -->
+    <SinglePhaseFVM
+      name="SinglePhaseFlow"
+      discretization="singlePhaseTPFA"
+      targetRegions="{ Fracture }"/>
+    <!-- Sphinx_Solvers_SinglePhaseFVM_End -->
+
+    <!-- Sphinx_Solvers_SurfaceGenerator -->
+    <SurfaceGenerator
+      name="SurfaceGen"
+      targetRegions="{ Domain }"
+      nodeBasedSIF="1"
+      initialRockToughness="1e6"
+      mpiCommOrder="1"/>
+    <!-- Sphinx_Solvers_SurfaceGenerator_End -->
+  </Solvers>
+
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+
+    <FiniteVolume>
+      <TwoPointFluxApproximation
+        name="singlePhaseTPFA"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <CellElementRegion
+      name="Domain"
+      cellBlocks="{ * }"
+      materialList="{ water, rock }"/>
+
+    <SurfaceElementRegion
+      name="Fracture"
+      defaultAperture="0.02e-3"
+      materialList="{ water, fractureFilling, fractureContact, hApertureModel }"/>
+  </ElementRegions>
+
+  <Constitutive>
+    <!-- Sphinx_Constitutive_CompressibleSinglePhaseFluid -->
+    <CompressibleSinglePhaseFluid
+      name="water"
+      defaultDensity="1000"
+      defaultViscosity="1.0e-6"
+      referencePressure="0.0"
+      compressibility="5e-10"
+      referenceViscosity="1.0e-6"
+      viscosibility="0.0"/>
+    <!-- Sphinx_Constitutive_CompressibleSinglePhaseFluid_End -->
+
+    <!-- Sphinx_Constitutive_ElasticIsotropic -->
+    <ElasticIsotropic
+      name="rock"
+      defaultDensity="2700"
+      defaultYoungModulus="30.0e9"
+      defaultPoissonRatio="0.25"/>
+    <!-- Sphinx_Constitutive_ElasticIsotropic_End -->
+
+    <CompressibleSolidParallelPlatesPermeability
+      name="fractureFilling"
+      solidModelName="nullSolid"
+      porosityModelName="fracturePorosity"
+      permeabilityModelName="fracturePerm"/>
+
+    <NullModel
+      name="nullSolid"/>
+
+    <PressurePorosity
+      name="fracturePorosity"
+      defaultReferencePorosity="1.00"
+      referencePressure="0.0"
+      compressibility="0.0"/>
+
+    <ParallelPlatesPermeability
+      name="fracturePerm"/>
+
+    <FrictionlessContact
+      name="fractureContact"/>
+    
+    <HydraulicApertureTable
+      name="hApertureModel"
+      apertureTableName="apertureTable"/> 
+
+  </Constitutive>
+
+  <FieldSpecifications>
+    <FieldSpecification
+      name="waterDensity"
+      initialCondition="1"
+      setNames="{ fracture1 }"
+      objectPath="ElementRegions"
+      fieldName="water_density"
+      scale="1000"/>
+
+    <!-- Sphinx_FieldSpecifications_FracturePlane -->
+    <FieldSpecification
+      name="separableFace"
+      initialCondition="1"
+      setNames="{ core1 }"
+      objectPath="faceManager"
+      fieldName="isFaceSeparable"
+      scale="1"/>
+    <!-- Sphinx_FieldSpecifications_FracturePlane_End -->
+
+    <!-- Sphinx_FieldSpecifications_InitFracture -->
+    <FieldSpecification
+      name="frac"
+      initialCondition="1"
+      setNames="{ fracture1 }"
+      objectPath="faceManager"
+      fieldName="ruptureState"
+      scale="1"/>
+    <!-- Sphinx_FieldSpecifications_InitFracture_End -->
+
+    <FieldSpecification
+      name="xConstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg, xpos }"/>
+
+    <FieldSpecification
+      name="yconstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ yneg, ypos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg, zpos }"/>
+
+    <!-- Sphinx_SourceFlux_InjSource -->
+    <SourceFlux
+      name="sourceTerm"
+      objectPath="ElementRegions/Fracture"
+      scale="-5e-2"
+      setNames="{ source1 }"/>
+    <!-- Sphinx_SourceFlux_InjSource_End -->
+  </FieldSpecifications>
+  
+  <Functions>
+      <TableFunction
+        name="apertureTable"
+        coordinates="{ -1.0e-3, 0.0 }"
+        values="{ 0.002e-3, 0.02e-3 }"/>
+  </Functions>
+
+  <!-- SPHINX_TASKS -->
+  <Tasks>
+    <PackCollection
+      name="pressureCollection"
+      objectPath="ElementRegions/Fracture/FractureSubRegion"
+      fieldName="pressure"/>
+
+    <PackCollection
+      name="apertureCollection"
+      objectPath="ElementRegions/Fracture/FractureSubRegion"
+      fieldName="elementAperture"/> 
+
+    <PackCollection
+      name="hydraulicApertureCollection"
+      objectPath="ElementRegions/Fracture/FractureSubRegion"
+      fieldName="hydraulicAperture"/>  
+
+    <PackCollection
+      name="areaCollection"
+      objectPath="ElementRegions/Fracture/FractureSubRegion"
+      fieldName="elementArea"/> 
+
+    <PackCollection
+      name="strainCollection"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="averageStrain"/> 
+  </Tasks>
+  <!-- SPHINX_TASKS_END -->
+
+  <Events
+    maxTime="100.1">
+
+    <SoloEvent
+      name="preFracture"
+      target="/Solvers/SurfaceGen"/>
+
+    <PeriodicEvent
+      name="outputs"
+      beginTime="2.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Outputs/vtkOutput"/>
+
+          <!-- Primary outputs -->
+
+    <PeriodicEvent
+      name="timeHistoryCollection0"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Tasks/pressureCollection" />
+
+    <PeriodicEvent
+      name="timeHistoryCollection1"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Tasks/apertureCollection" />
+
+    <PeriodicEvent
+      name="timeHistoryCollection2"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Tasks/hydraulicApertureCollection" /> 
+
+    <PeriodicEvent
+      name="timeHistoryCollection3"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Tasks/areaCollection" />        
+
+    <PeriodicEvent
+      name="timeHistoryCollection4"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Tasks/strainCollection" />  
+    
+    <PeriodicEvent
+      name="timeHistoryOutput"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Outputs/timeHistoryOutput"/> 
+
+    <PeriodicEvent
+      name="strainOutput"
+      beginTime="0.0"
+      timeFrequency="2.0"
+      targetExactTimestep="0"
+      target="/Outputs/strainOutput"/> 
+
+
+
+    <PeriodicEvent
+      name="solverApplications0"
+      beginTime="0.0"
+      endTime="10.0"
+      forceDt="0.25"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications1"
+      beginTime="10.0"
+      endTime="20.0"
+      forceDt="0.5"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications2"
+      beginTime="20.0"      
+      forceDt="1.0"
+      target="/Solvers/hydrofracture"/>
+  </Events>
+
+  <Outputs>
+    <VTK
+      name="vtkOutput"
+      plotFileRoot="zeroViscosity"
+      plotLevel="3"/>
+
+    <TimeHistory
+      name="timeHistoryOutput"
+      sources="{/Tasks/pressureCollection, /Tasks/apertureCollection, /Tasks/hydraulicApertureCollection, /Tasks/areaCollection}"
+      filename="heterogeneousInSitu_timeHistory" />
+
+    <TimeHistory
+      name="strainOutput"
+      sources="{/Tasks/strainCollection}"
+      filename="heterogeneousInSitu_timeHistory_strain" />
+
+    <Restart
+      name="restartOutput"/>
+  </Outputs>
+</Problem>

@@ -1,0 +1,38 @@
+type,procs,run,num_ranks,run_time_s,total_time_s,init_time_s,started_at,finished_at,complete,path
+weak,1,1,1,1704.316944709,1705.925288997,0.301539099,2026-06-18 04:57:03.598466840,2026-06-18 05:25:29.523755837,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run1/output_run1.log
+weak,1,2,1,1701.164705806,1702.663602858,0.275610981,2026-06-18 13:43:02.310423020,2026-06-18 14:11:24.974025878,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run2/output_run2.log
+weak,1,3,1,1705.20922501,1706.699358531,0.274843673,2026-06-18 22:29:27.501789702,2026-06-18 22:57:54.201148233,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run3/output_run3.log
+weak,1,4,1,1707.343354104,1708.849843651,0.267221168,2026-06-19 07:18:35.743745397,2026-06-19 07:47:04.593589048,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run4/output_run4.log
+weak,1,5,1,1701.096346368,1702.714075898,0.395332987,2026-06-19 16:05:22.220063652,2026-06-19 16:33:44.934139550,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run5/output_run5.log
+weak,1,6,1,1700.236832484,1702.47353377,1.010117948,2026-06-20 00:51:12.348043158,2026-06-20 01:19:34.821576928,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_1_procs_run6/output_run6.log
+weak,2,1,2,3887.132902203,3888.786969348,0.410354275,2026-06-18 05:25:30.548945116,2026-06-18 06:30:19.335914464,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run1/output_run1.log
+weak,2,2,2,3897.63692494,3899.182032965,0.301021146,2026-06-18 14:11:25.850731909,2026-06-18 15:16:25.032764874,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run2/output_run2.log
+weak,2,3,2,3880.826283378,3882.350689461,0.284723547,2026-06-18 22:57:55.158488489,2026-06-19 00:02:37.509177950,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run3/output_run3.log
+weak,2,4,2,3896.474427658,3898.096500559,0.350122254,2026-06-19 07:47:05.836116364,2026-06-19 08:52:03.932616923,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run4/output_run4.log
+weak,2,5,2,3898.510263767,3900.069475905,0.289262991,2026-06-19 16:33:46.722940439,2026-06-19 17:38:46.792416344,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run5/output_run5.log
+weak,2,6,2,,,,2026-06-20 01:19:37.305761589,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_2_procs_run6/output_run6.log
+weak,4,1,4,8360.968916477,8362.59185618,0.342047608,2026-06-18 06:30:20.700618210,2026-06-18 08:49:43.292474390,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_4_procs_run1/output_run1.log
+weak,4,2,4,8374.846319121,8376.503515948,0.370472734,2026-06-18 15:16:26.632829583,2026-06-18 17:36:03.136345531,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_4_procs_run2/output_run2.log
+weak,4,3,4,8376.99566439,8378.636365959,0.351181357,2026-06-19 00:02:38.972724577,2026-06-19 02:22:17.609090536,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_4_procs_run3/output_run3.log
+weak,4,4,4,8391.362748379,8393.014394664,0.340212364,2026-06-19 08:52:06.238124286,2026-06-19 11:11:59.252518950,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_4_procs_run4/output_run4.log
+weak,4,5,4,8354.842858571,8356.448420084,0.308651627,2026-06-19 17:38:48.813021532,2026-06-19 19:58:05.261441616,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_4_procs_run5/output_run5.log
+weak,8,1,8,17538.239531373,17539.932723798,0.363630596,2026-06-18 08:49:44.828425231,2026-06-18 13:42:04.761149029,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_8_procs_run1/output_run1.log
+weak,8,2,8,17529.048319787,17530.742559267,0.357652916,2026-06-18 17:36:05.098196251,2026-06-18 22:28:15.840755518,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_8_procs_run2/output_run2.log
+weak,8,3,8,17713.287397906,17715.322180723,0.481276253,2026-06-19 02:22:19.922158395,2026-06-19 07:17:35.244339118,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_8_procs_run3/output_run3.log
+weak,8,4,8,17528.147998086,17529.958842701,0.465646144,2026-06-19 11:12:01.054670510,2026-06-19 16:04:11.013513211,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_8_procs_run4/output_run4.log
+weak,8,5,8,17510.796071561,17513.246913035,1.016318982,2026-06-19 19:58:08.170087479,2026-06-20 00:50:01.417000514,True,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_8_procs_run5/output_run5.log
+weak,16,1,16,,,,2026-06-18 13:42:06.927229286,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_16_procs_run1/output_run1.log
+weak,16,2,16,,,,2026-06-18 22:28:18.098141938,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_16_procs_run2/output_run2.log
+weak,16,3,16,,,,2026-06-19 07:17:37.552561777,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_16_procs_run3/output_run3.log
+weak,16,4,16,,,,2026-06-19 16:04:13.442519790,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_16_procs_run4/output_run4.log
+weak,16,5,16,,,,2026-06-20 00:50:04.405158740,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_16_procs_run5/output_run5.log
+weak,32,1,32,,,,2026-06-18 13:42:42.475173863,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_32_procs_run1/output_run1.log
+weak,32,2,32,,,,2026-06-18 22:28:58.852271178,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_32_procs_run2/output_run2.log
+weak,32,3,32,,,,2026-06-19 07:18:13.273482727,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_32_procs_run3/output_run3.log
+weak,32,4,32,,,,2026-06-19 16:04:50.699997444,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_32_procs_run4/output_run4.log
+weak,32,5,32,,,,2026-06-20 00:50:43.633832913,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_32_procs_run5/output_run5.log
+weak,64,1,64,,,,2026-06-18 13:42:48.868491541,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_64_procs_run1/output_run1.log
+weak,64,2,64,,,,2026-06-18 22:29:10.003420851,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_64_procs_run2/output_run2.log
+weak,64,3,64,,,,2026-06-19 07:18:21.051874590,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_64_procs_run3/output_run3.log
+weak,64,4,64,,,,2026-06-19 16:05:01.245795982,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_64_procs_run4/output_run4.log
+weak,64,5,64,,,,2026-06-20 00:50:54.017215675,,False,/global/homes/b/badr/scratch/kgd_weak_scaling_outputs/kgd_benchmark_weak_64_procs_run5/output_run5.log

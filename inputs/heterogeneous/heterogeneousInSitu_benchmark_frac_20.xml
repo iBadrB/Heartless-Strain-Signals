@@ -1,0 +1,231 @@
+<?xml version="1.0" ?>
+
+<!--
+  Derived from the heterogeneous in-situ stress benchmark distributed with GEOS
+  (inputFiles/hydraulicFracturing in the GEOS repository):
+  https://github.com/GEOS-DEV/GEOS/tree/develop/inputFiles/hydraulicFracturing
+  Property tables in ./tables are byte-identical upstream copies; ./tables_hfts2
+  is thesis-built (buildInputTables_hfts2.py). Thesis modifications: time-history
+  output collections, parameterized fracture hydraulic-aperture model, Newton cap
+  40->80, fiber displacement export (frac_20-23), HFTS-2 tables (frac_22/23).
+  Unmodified originals + details: simulation/upstream_geos_examples/PROVENANCE.md
+-->
+
+<!--
+  frac_20: NEW-FRACTURE (propagating) case of the cross-well DSS "heart"
+  experiment, transferred from the standalone geos_new_fracture.xml decks
+  into the heterogeneousInSitu benchmark family (heterogeneous layered
+  stress/moduli from ./tables, swarm-upscaled fluid/toughness).
+
+  Pair: frac_20 = propagating fracture -> heart-shaped tensional precursor +
+  large compressional lobes at the monitor fiber; frac_21 = pre-existing
+  conductive fracture reactivation -> narrow re-dilation stripe, no heart
+  (SPE-212370-MS Fig 3).  The two decks differ ONLY in: perf vs preexist,
+  K_init (1e6 vs 1e9), the aperture-model parameters, and frac_21's
+  near-closure initial pressure.
+
+  MONITOR FIBER: the node line x = 60 m, z = 0, all y (crosses the fracture
+  plane).  The benchmark fracture front passes x = 60 mid-stage, giving a
+  slow, decelerating approach - the field-like heart.  Nodal totalDisplacement
+  is collected on the fiber nodeset every th_collection_dt = 5 s
+  (heterogeneousInSitu_timeHistory_fiber.hdf5); post-process with
+  geos_dss (GeosCase/Fiber) or hdf5_tools.get_displacement_fiber_waterfall
+  at fiber_position=(60, 0).
+-->
+<Problem>
+  <Included>
+    <File
+      name="./heterogeneousInSitu_base.xml"/>
+  </Included>
+
+  <Parameters>
+    <!-- Time-history sampling cadence (consumed by heterogeneousInSitu_base.xml):
+         5 s so strain-rate waterfalls resolve the approach and arrival -->
+    <Parameter
+      name="th_collection_dt"
+      value="5 [s]"/>
+
+    <!-- Fracture hydraulic-aperture model (consumed by heterogeneousInSitu_base.xml) -->
+    <Parameter
+      name="hydr_aper_closed"
+      value="1.0e-6"/>
+
+    <Parameter
+      name="hydr_aper_zero"
+      value="1.0e-4"/>
+
+    <Parameter
+      name="default_aperture"
+      value="1.0e-4"/>
+
+    <!-- Use the swarm upscaling law -->
+    <Parameter
+      name="Nperf"
+      value="5"/>
+
+    <Parameter
+      name="Nswarm"
+      value="5"/>
+
+    <Parameter
+      name="mu_init"
+      value="0.001"/>
+
+    <Parameter
+      name="K_init"
+      value="1e6"/>
+
+    <Parameter
+      name="mu_upscaled"
+      value="`$mu_init$*($Nswarm$**2)`"/>
+
+    <Parameter
+      name="K_upscaled"
+      value="`$K_init$*($Nswarm$**0.5)`"/>
+
+    <Parameter
+      name="ContactStiffness"
+      value="1e10"/>
+
+    <!-- Event timing -->
+    <Parameter
+      name="pump_start"
+      value="1 [min]"/>
+
+    <Parameter
+      name="pump_ramp"
+      value="5 [s]"/>
+
+    <Parameter
+      name="pump_ramp_dt_limit"
+      value="0.2 [s]"/>
+
+    <Parameter
+      name="dt_max"
+      value="30 [s]"/>
+
+    <Parameter
+      name="t_max"
+      value="20 [min]"/>
+
+    <!-- Etc. -->
+    <Parameter
+      name="table_root"
+      value="./tables"/>
+
+    <Parameter
+      name="t_allocation"
+      value="28 [min]"/>
+  </Parameters>
+
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      xCoords="{ 0, 200, 250 }"
+      yCoords="{ -100, 0, 100 }"
+      zCoords="{ -150, -100, 0, 100, 150 }"
+      nx="{ 50, 5 }"
+      ny="{ 10, 10 }"
+      nz="{ 5, 25, 25, 5 }"
+      xBias="{ 0, -0.6 }"
+      yBias="{ 0.6, -0.6 }"
+      zBias="{ 0.6, 0, 0, -0.6 }"
+      cellBlockNames="{ cb1 }"
+      elementTypes="{ C3D8 }"/>
+  </Mesh>
+
+  <Geometry>
+    <Box
+      name="source_a"
+      xMin="{ -0.1, -0.1, -0.1 }"
+      xMax="{ 4.1, 0.1, 4.1 }"/>
+
+    <Box
+      name="perf_a"
+      xMin="{ -4.1, -0.1, -4.1 }"
+      xMax="{ 4.1, 0.1, 4.1 }"/>
+
+    <ThickPlane
+      name="fracturable_a"
+      normal="{ 0, 1, 0 }"
+      origin="{ 0, 0, 0 }"
+      thickness="0.1"/>
+
+    <!-- MONITOR FIBER: node column x = 60 m (grid node: dx = 4 m), z = 0,
+         spanning y.  Box captures only that node line (neighbors at 56/64
+         and z = +-4 fall outside). -->
+    <Box
+      name="fiber"
+      xMin="{ 58.0, -101.0, -2.0 }"
+      xMax="{ 62.0, 101.0, 2.0 }"/>
+  </Geometry>
+
+  <!-- Fiber displacement sampling (names continue the base's
+       timeHistoryCollection0-4 series) -->
+  <Tasks>
+    <PackCollection
+      name="fiberDispCollection"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      setNames="{ fiber }"/>
+  </Tasks>
+
+  <Outputs>
+    <TimeHistory
+      name="fiberDispOutput"
+      sources="{ /Tasks/fiberDispCollection }"
+      filename="heterogeneousInSitu_timeHistory_fiber"/>
+  </Outputs>
+
+  <Events>
+    <PeriodicEvent
+      name="timeHistoryCollection5"
+      beginTime="0.0"
+      timeFrequency="$th_collection_dt$"
+      targetExactTimestep="0"
+      target="/Tasks/fiberDispCollection"/>
+
+    <PeriodicEvent
+      name="fiberDispOutput"
+      beginTime="0.0"
+      timeFrequency="30 [s]"
+      targetExactTimestep="0"
+      target="/Outputs/fiberDispOutput"/>
+  </Events>
+
+  <FieldSpecifications>
+    <!-- Fracture-related nodesets -->
+    <FieldSpecification
+      name="frac"
+      fieldName="ruptureState"
+      initialCondition="1"
+      objectPath="faceManager"
+      scale="1"
+      setNames="{ perf_a }"/>
+
+    <FieldSpecification
+      name="separableFace"
+      fieldName="isFaceSeparable"
+      initialCondition="1"
+      objectPath="faceManager"
+      scale="1"
+      setNames="{ fracturable_a }"/>
+
+    <!-- Fluid Initial Conditions -->
+    <FieldSpecification
+      name="waterDensity"
+      fieldName="water_density"
+      initialCondition="1"
+      objectPath="ElementRegions"
+      scale="1000"
+      setNames="{ perf_a }"/>
+
+    <!-- Fluid BC's (kg/s, not m3/s) -->
+    <SourceFlux
+      name="sourceTerm"
+      objectPath="ElementRegions/Fracture"
+      scale="`-1000.0/$Nperf$`"
+      functionName="flow_rate"
+      setNames="{ source_a }"/>
+  </FieldSpecifications>
+</Problem>
