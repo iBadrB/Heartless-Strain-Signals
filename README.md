@@ -20,7 +20,7 @@ GEOS builds: `simulation/GEOS_VERSIONS.md`.
 ## Data availability
 
 The large data folders are NOT in this repository; they are archived on Zenodo
-(DOI: TO-BE-ADDED after the Zenodo record is published) as four tar files:
+(DOI: https://doi.org/10.5281/zenodo.21340730) as four tar files:
 `hss_field_data.tar` (restores `inputs/field_data/`), `hss_outputs_kgd_spacing.tar`,
 `hss_outputs_kgd_injection.tar`, and `hss_outputs_heterogeneous.tar` (restore
 `outputs/`). Extract each at the repository root and the notebooks run as-is.
