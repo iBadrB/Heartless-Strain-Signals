@@ -326,7 +326,9 @@ def plot_attributes(
         ax1.add_artist(mesh_legend)
         ax1.legend(shape_handles, shape_labels, title="Attributes", loc="upper right")
     else:
-        ax1.legend(shape_handles, shape_labels, title="Attributes", loc="upper left")
+        # upper right keeps the legend clear of the fracture footprints, which
+        # grow from the origin toward +x
+        ax1.legend(shape_handles, shape_labels, title="Attributes", loc="upper right")
 
     if not legends:
         ax1.legend().set_visible(False)
@@ -494,6 +496,76 @@ def plot_fiber_panels(wf, clim_solid, title="", clim_fiber=None, rate_clim=None)
     return fig, axes
 
 
+def plot_waterfall_grid(entries, clim=None, rate_clim=None, ylim=None, comp="xx",
+                        offset_label="x (m)", time_label="Time (s)",
+                        smooth_frames=1, panel_height=2.3, width=11):
+    """Multi-run strain / strain-rate waterfall grid with shared decorations.
+
+    One row per run, columns = strain and strain rate.  Designed for print
+    readability: only the top row carries the column titles ("Strain",
+    "Strain Rate"), the run identity is written vertically at the left of
+    each row, tick labels appear only on the bottom row / left column, a
+    single shared time label and offset label serve the whole grid, and two
+    horizontal colorbars at the bottom replace the per-panel ones (strain
+    and strain rate carry different units, so they cannot share a single
+    bar).  Both columns use ONE color limit across all rows so the rows are
+    directly comparable.
+
+    Parameters:
+    -----------
+        entries (list): [(row_label, waterfall, time, offsets), ...] with
+            waterfall shaped (nt, n_offsets).
+        clim (float, optional): Shared symmetric strain limit.  None -> the
+            99th-percentile x 1.2 rule, maximized over rows.
+        rate_clim (float, optional): Same for the strain-rate column.
+        ylim (tuple, optional): Offset-axis limits for every panel.
+        comp (str, optional): Tensor component for the colorbar labels.
+        smooth_frames (int, optional): Temporal smoothing for the rate
+            column (see strain_rate). Defaults to 1 (off).
+        panel_height, width (float, optional): Figure geometry per row / total.
+
+    Returns:
+    -----------
+        (fig, axes): axes shaped (n_rows, 2).
+    """
+    rates = [strain_rate(np.asarray(w, float), np.asarray(t, float).ravel(),
+                         smooth_frames=smooth_frames) for _, w, t, _ in entries]
+    if clim is None:
+        clim = max(np.nanpercentile(np.abs(np.asarray(w, float)), 99) * 1.2
+                   for _, w, _, _ in entries)
+    if rate_clim is None:
+        rate_clim = max(np.nanpercentile(np.abs(r), 99) * 1.2 for r in rates)
+
+    n = len(entries)
+    fig, axes = plt.subplots(n, 2, figsize=(width, panel_height * n),
+                             sharex=True, sharey=True, squeeze=False,
+                             gridspec_kw=dict(hspace=0.12, wspace=0.06))
+    for r, ((label, w, t, offs), rate) in enumerate(zip(entries, rates)):
+        te, oe = cell_edges(np.asarray(t, float).ravel()), cell_edges(offs)
+        pm_s = axes[r, 0].pcolormesh(te, oe, np.asarray(w, float).T,
+                                     cmap="seismic", vmin=-clim, vmax=clim)
+        pm_r = axes[r, 1].pcolormesh(te, oe, rate.T,
+                                     cmap="seismic", vmin=-rate_clim, vmax=rate_clim)
+        if ylim:
+            axes[r, 0].set_ylim(*ylim)
+        axes[r, 0].set_ylabel(label, fontsize=11)     # vertical row identity
+    axes[0, 0].set_title("Strain", fontsize=13)
+    axes[0, 1].set_title("Strain Rate", fontsize=13)
+    fig.supxlabel(time_label, fontsize=12, y=0.075)
+    fig.supylabel(offset_label, fontsize=12, x=0.015)
+
+    # shared horizontal colorbars along the bottom, one per column
+    fig.subplots_adjust(bottom=0.115, left=0.14, right=0.985, top=0.965)
+    cax_s = fig.add_axes([0.155, 0.045, 0.38, 0.012])
+    cax_r = fig.add_axes([0.595, 0.045, 0.38, 0.012])
+    fig.colorbar(pm_s, cax=cax_s, orientation="horizontal",
+                 label=rf"$\epsilon_{{{comp}}}$")
+    fig.colorbar(pm_r, cax=cax_r, orientation="horizontal",
+                 label=rf"$\dot{{\epsilon}}_{{{comp}}}$ (1/s)")
+    plt.show()
+    return fig, axes
+
+
 def plot_fiber_vs_displacement(wf, dwf, title="", clim=None, rate_clim=None):
     """Aperture-corrected vs displacement-based fiber waterfalls side by side
     (validation of the aperture approximation) plus the displacement-based
@@ -521,15 +593,26 @@ def plot_fiber_vs_displacement(wf, dwf, title="", clim=None, rate_clim=None):
          rcl, r"$\dot{\epsilon}_{yy}$ (1/s)"),
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(24, 6), sharey=True)
+    # shared decorations for print readability: per-panel titles kept (they
+    # differ in content), but one shared y axis, one shared time label, and
+    # horizontal colorbars along the bottom (one spanning the two strain
+    # panels, one for the rate panel) instead of three vertical ones.
+    fig, axes = plt.subplots(1, 3, figsize=(22, 6.5), sharey=True,
+                             gridspec_kw=dict(wspace=0.06))
+    pms = []
     for ax, (ttl, arr, t_ax, offs, _cl, lbl) in zip(axes, panels):
         pm = ax.pcolormesh(cell_edges(t_ax), cell_edges(offs), arr.T, cmap="seismic", vmin=-_cl, vmax=_cl)
+        pms.append(pm)
         ax.set_title(ttl)
-        ax.set_xlabel("Time (s)")
-        fig.colorbar(pm, ax=ax, label=lbl, fraction=0.05)
-    axes[0].set_ylabel("y (m)")
     axes[0].set_ylim(-60, 60)
+    fig.supxlabel("Time (s)", fontsize=13, y=0.09)
+    fig.supylabel("y (m)", fontsize=13, x=0.055)
     fig.suptitle(f"{title} - DSS fiber @ (x, z) = {dwf['fiber_position']}")
+    fig.subplots_adjust(bottom=0.16, left=0.09, right=0.985, top=0.88)
+    cax_s = fig.add_axes([0.11, 0.055, 0.50, 0.015])
+    cax_r = fig.add_axes([0.70, 0.055, 0.27, 0.015])
+    fig.colorbar(pms[0], cax=cax_s, orientation="horizontal", label=r"$\epsilon_{yy}$")
+    fig.colorbar(pms[2], cax=cax_r, orientation="horizontal", label=r"$\dot{\epsilon}_{yy}$ (1/s)")
     plt.grid(False)
     plt.show()
     return fig, axes
@@ -551,30 +634,46 @@ def plot_displacement_fiber_grid(wf_dict, monitor_x, off_break=15.0, ylim=(-100,
         while low enough that the leading extension stays visible.  None
         (default) auto-scales each run to 0.5x its own |max|.
     """
-    fig, axes = plt.subplots(2, len(wf_dict), figsize=(6.5*len(wf_dict), 9),
-                             sharey=True, squeeze=False)
-    for j, (name, wf) in enumerate(wf_dict.items()):
+    # shared decorations: run names as column titles, "Strain" / "Strain rate"
+    # written vertically at the left of each row, tick labels only on the
+    # outer edges, and two horizontal colorbars along the bottom.  The rate
+    # scale is shared across the runs (off-core rule, maximized over runs)
+    # so the amplitude contrast between the runs stays visible.
+    names = list(wf_dict)
+    # shared strain limit: the fixed clim if given, else 0.5x the largest |max|
+    strain_cl = (clim*1e6 if clim is not None else
+                 max(np.nanmax(np.abs(wf["fiber"]))*1e6*0.5 for wf in wf_dict.values()))
+    rates, rate_cl = {}, 0.0
+    for name, wf in wf_dict.items():
         tm = np.asarray(wf["time"]).ravel()/60.0
         off = np.abs(wf["offsets"]) > off_break
         sr = strain_rate(wf["fiber"], tm, smooth_frames=smooth_frames)*1e6   # microstrain / min
-        v = np.percentile(np.abs(sr[:, off]), 99)*1.2
-        strain_cl = clim*1e6 if clim is not None else np.nanmax(np.abs(wf["fiber"]))*1e6*0.5
-        panels = [
-            (wf["fiber"]*1e6, strain_cl, r"$\epsilon_{yy}$ (ue)", "strain"),
-            (sr, v, r"$\dot{\epsilon}_{yy}$ (ue/min)", "strain rate"),
-        ]
-        for i, (arr, cl, lbl, sub) in enumerate(panels):
-            ax = axes[i][j]
-            pm = ax.pcolormesh(cell_edges(tm), cell_edges(wf["offsets"]), arr.T,
-                               cmap="seismic", vmin=-cl, vmax=cl)
-            ax.set_ylim(*ylim)
-            ax.set_title(f"{name} - {sub}")
-            if i == 1:
-                ax.set_xlabel("time (min)")
-            if j == 0:
-                ax.set_ylabel("y along fiber (m)")
-            fig.colorbar(pm, ax=ax, label=lbl, fraction=0.05)
+        rates[name] = sr
+        rate_cl = max(rate_cl, np.percentile(np.abs(sr[:, off]), 99)*1.2)
+
+    fig, axes = plt.subplots(2, len(wf_dict), figsize=(6.0*len(wf_dict), 9),
+                             sharex=True, sharey=True, squeeze=False,
+                             gridspec_kw=dict(hspace=0.08, wspace=0.06))
+    for j, name in enumerate(names):
+        wf = wf_dict[name]
+        tm = np.asarray(wf["time"]).ravel()/60.0
+        te, oe = cell_edges(tm), cell_edges(wf["offsets"])
+        pm_s = axes[0][j].pcolormesh(te, oe, (wf["fiber"]*1e6).T, cmap="seismic",
+                                     vmin=-strain_cl, vmax=strain_cl)
+        pm_r = axes[1][j].pcolormesh(te, oe, rates[name].T, cmap="seismic",
+                                     vmin=-rate_cl, vmax=rate_cl)
+        axes[0][j].set_ylim(*ylim)
+        axes[0][j].set_title(name, fontsize=12)
+    axes[0][0].set_ylabel("Strain", fontsize=12)
+    axes[1][0].set_ylabel("Strain rate", fontsize=12)
+    fig.supxlabel("time (min)", fontsize=12, y=0.075)
+    fig.supylabel("y along fiber (m)", fontsize=12, x=0.02)
     fig.suptitle(f"Displacement-based fiber at x = {monitor_x:.0f} m")
+    fig.subplots_adjust(bottom=0.115, left=0.11, right=0.985, top=0.92)
+    cax_s = fig.add_axes([0.13, 0.045, 0.37, 0.013])
+    cax_r = fig.add_axes([0.60, 0.045, 0.37, 0.013])
+    fig.colorbar(pm_s, cax=cax_s, orientation="horizontal", label=r"$\epsilon_{yy}$ (ue)")
+    fig.colorbar(pm_r, cax=cax_r, orientation="horizontal", label=r"$\dot{\epsilon}_{yy}$ (ue/min)")
     plt.grid(False)
     plt.show()
     return fig, axes
