@@ -227,3 +227,4 @@ xmltodict==1.0.2
 xsdata==25.7
 xsdata_pydantic==24.5
 yarl==1.22.0
+xlrd==2.0.1                # legacy .xls directional surveys (B1H)
