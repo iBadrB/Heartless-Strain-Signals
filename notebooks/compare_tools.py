@@ -636,7 +636,8 @@ def plot_displacement_fiber_grid(wf_dict, monitor_x, off_break=15.0, ylim=(-100,
     """
     # shared decorations: run names as column titles, "Strain" / "Strain rate"
     # written vertically at the left of each row, tick labels only on the
-    # outer edges, and two horizontal colorbars along the bottom.  The rate
+    # outer edges, and one vertical colorbar attached to the right of each
+    # row (so the quantity-to-row association is unambiguous).  The rate
     # scale is shared across the runs (off-core rule, maximized over runs)
     # so the amplitude contrast between the runs stays visible.
     names = list(wf_dict)
@@ -666,14 +667,14 @@ def plot_displacement_fiber_grid(wf_dict, monitor_x, off_break=15.0, ylim=(-100,
         axes[0][j].set_title(name, fontsize=12)
     axes[0][0].set_ylabel("Strain", fontsize=12)
     axes[1][0].set_ylabel("Strain rate", fontsize=12)
-    fig.supxlabel("time (min)", fontsize=12, y=0.075)
+    fig.supxlabel("time (min)", fontsize=12, y=0.025)
     fig.supylabel("y along fiber (m)", fontsize=12, x=0.02)
     fig.suptitle(f"Displacement-based fiber at x = {monitor_x:.0f} m")
-    fig.subplots_adjust(bottom=0.115, left=0.11, right=0.985, top=0.92)
-    cax_s = fig.add_axes([0.13, 0.045, 0.37, 0.013])
-    cax_r = fig.add_axes([0.60, 0.045, 0.37, 0.013])
-    fig.colorbar(pm_s, cax=cax_s, orientation="horizontal", label=r"$\epsilon_{yy}$ (ue)")
-    fig.colorbar(pm_r, cax=cax_r, orientation="horizontal", label=r"$\dot{\epsilon}_{yy}$ (ue/min)")
+    fig.subplots_adjust(bottom=0.09, left=0.11, right=0.88, top=0.92)
+    fig.colorbar(pm_s, ax=list(axes[0]), location="right", fraction=0.04,
+                 pad=0.015, label=r"$\epsilon_{yy}$ ($\mu\varepsilon$)")
+    fig.colorbar(pm_r, ax=list(axes[1]), location="right", fraction=0.04,
+                 pad=0.015, label=r"$\dot{\epsilon}_{yy}$ ($\mu\varepsilon$/min)")
     plt.grid(False)
     plt.show()
     return fig, axes
