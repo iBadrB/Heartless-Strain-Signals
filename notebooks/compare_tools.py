@@ -267,7 +267,7 @@ def plot_attributes(
         ax3.plot(time, frac_height_pos, marker=mk, markerfacecolor=mfc, linestyle=ls, label=f"{name} pos {frac_height_pos[-1]:.2f} m", color=color)
         ax3.plot(time, frac_height_neg, marker=mk, markerfacecolor=mfc, linestyle=ls, alpha=0.55, label=f"{name} neg {frac_height_neg[-1]:.2f} m", color=color)
         ax3.set_xlabel("Time (s)")
-        ax3.set_ylabel("Fracture height (m)")
+        ax3.set_ylabel("Max vertical extent (m)")
         ax3.legend()
 
         aperture_arr = []
